@@ -1,0 +1,24 @@
+from flask import render_template, session,  request, redirect, url_for, flash
+from shop import app, db, bcrypt
+from.forms import RegistrationForm
+import os
+from.modelos import User
+
+
+@app.route('/')
+def home():
+    return render_template('admin/index.html', title='Pagina deladministrador')
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    form = RegistrationForm(request.form)
+    if request.method == 'POST' and form.validate():
+        hash_password = bcrypt.generate_password_hash(form.password.data)
+        user = User(nombre=form.nombre.data, correo=form.correo.data,
+        password=hash_password)
+        db.session.add(user)
+        db.session.commit()
+        flash(f' Bienvenido {form.nombre.data} Registro realizado con exitoso','succes')
+        return redirect(url_for('home'))
+    return render_template('admin/register.html', form=form, title="Página de registro")
